@@ -117,5 +117,17 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  alerting:
+    build:
+      context: .
+      dockerfile: alerting_service/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://logforge:${POSTGRES_PASSWORD:-logforge_dev}@postgres:5432/logforge
+      LOG_LEVEL: INFO
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
 volumes:
   postgres_data:
