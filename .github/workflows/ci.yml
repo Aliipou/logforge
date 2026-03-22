@@ -32,7 +32,7 @@ jobs:
           pip install fastapi uvicorn pydantic pydantic-settings asyncpg redis
       - name: Run unit tests
         run: pytest tests/unit -v --cov --cov-report=xml || true
-      - uses: codecov/codecov-action@v4
+      - uses: codecov/codecov-action@v5
         with:
           file: coverage.xml
         continue-on-error: true
