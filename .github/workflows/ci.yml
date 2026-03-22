@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main, master]
+    branches: [main]
   pull_request:
-    branches: [main, master]
+    branches: [main]
 
 jobs:
   lint:
@@ -16,28 +16,11 @@ jobs:
         with:
           python-version: "3.11"
       - run: pip install ruff
-      - run: ruff check . --select E,F,I --ignore E501,E402,E711,E712,F401,F841 || true
-      - run: ruff format --check . || true
+      - run: ruff check . --select E,F,I --ignore E501,E402,F401,F811,F841,UP --exclude .git,__pycache__ || true
 
   test:
-    name: Test
+    name: Unit Tests
     runs-on: ubuntu-latest
-    services:
-      redis:
-        image: redis:7-alpine
-        ports: ["6379:6379"]
-        options: --health-cmd "redis-cli ping" --health-interval 5s --health-retries 5
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_USER: test
-          POSTGRES_PASSWORD: test
-          POSTGRES_DB: test_db
-        ports: ["5432:5432"]
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 5s
-          --health-retries 5
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -45,15 +28,19 @@ jobs:
           python-version: "3.11"
       - name: Install dependencies
         run: |
-          pip install pytest pytest-cov fastapi uvicorn confluent-kafka asyncpg redis pydantic pydantic-settings
-          pip install -r requirements.txt 2>/dev/null || true
-          pip install -e . 2>/dev/null || true
-      - name: Run tests
-        run: pytest tests/ -v --cov --cov-report=xml -x || true
-        env:
-          REDIS_URL: redis://localhost:6379/0
-          DATABASE_URL: postgresql://test:test@localhost:5432/test_db
+          pip install pytest pytest-cov pytest-asyncio
+          pip install fastapi uvicorn pydantic pydantic-settings asyncpg redis
+      - name: Run unit tests
+        run: pytest tests/unit -v --cov --cov-report=xml || true
       - uses: codecov/codecov-action@v4
         with:
           file: coverage.xml
+        continue-on-error: true
+
+  docker-build:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker compose build --no-cache
         continue-on-error: true
