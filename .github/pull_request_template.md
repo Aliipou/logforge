@@ -1,24 +1,30 @@
-## Summary
+## مشکل چیست؟
+<!-- یک جمله: این PR چه مشکلی را حل می‌کند؟ -->
 
-<!-- What does this PR do? 1-3 sentences. -->
+## چرا این راه‌حل؟
+<!-- چرا این approach انتخاب شد؟ ساده‌تر چه بود؟ -->
 
-## Type of Change
+---
 
-- [ ] Bug fix
-- [ ] New feature
-- [ ] Performance improvement
-- [ ] Documentation
-- [ ] Refactor / chore
+## Anti-Garbage Checklist
 
-## Testing
+### قبل از merge این‌ها را تیک بزن:
 
-- [ ] Added unit tests
-- [ ] Tested with `docker compose up` locally
-- [ ] Coverage did not decrease
+**Design**
+- [ ] این کد قابل حذف است؟ (اگر نه، دلیل داری؟)
+- [ ] naming بدون توضیح اضافه واضح است؟
+- [ ] state flow را می‌توانی روی کاغذ رسم کنی؟
+- [ ] این abstraction الان واقعاً لازم است؟
 
-## Checklist
+**Quality**
+- [ ] error handling واقعی است — نه فقط `console.log(e)`؟
+- [ ] هر log یک اطلاعات actionable دارد؟
+- [ ] هر test یک رفتار واقعی را verify می‌کند — نه فقط coverage؟
 
-- [ ] Title follows Conventional Commits (`feat:`, `fix:`, `docs:`, etc.)
-- [ ] CHANGELOG.md updated under `[Unreleased]`
-- [ ] CI passes
-- [ ] No secrets or credentials in the diff
+**AI Usage**
+- [ ] اگر AI نوشته: تمام کد را خودت خواندی و فهمیدی؟
+- [ ] هیچ بخش auth/security/concurrency توسط AI بدون review کامل نیست؟
+
+**قانون طلایی**
+- [ ] می‌توانی بدون AI توضیح دهی این کد چه می‌کند، چرا اینطور طراحی شده، و failure mode آن چیست؟
+- [ ] نسخه خسته و عصبانی خودم ۶ ماه دیگر از این کد متنفر نخواهد شد؟
