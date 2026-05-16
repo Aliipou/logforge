@@ -175,7 +175,7 @@ async def health() -> dict[str, Any]:
             async with _pool.acquire() as conn:
                 await conn.fetchval("SELECT 1")
             db_ok = True
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.warning("health probe failed: %s", exc, exc_info=True)
     return {"status": "healthy" if db_ok else "degraded", "service": "query",
             "db": "ok" if db_ok else "error"}

@@ -17,6 +17,5 @@ pytest.importorskip("testcontainers")
 #
 # Stub here â€” full implementation in the next iteration.
 
-def test_placeholder():
-    """Placeholder until testcontainers are wired up."""
-    assert True
+# Placeholder removed — full integration tests will be added once testcontainers are wired up.
+# See the scaffold comments above for the intended test flow.
