@@ -1,4 +1,4 @@
-FROM python:3.11-slim AS base
+FROM python:3.11.12-slim-bookworm AS base
 WORKDIR /app
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 
