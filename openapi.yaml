@@ -1,0 +1,113 @@
+openapi: "3.1.0"
+info:
+  title: LogForge API
+  version: "1.0.0"
+  description: Distributed log ingestion, querying, and alerting platform. All routes prefixed with /api/v1.
+  contact:
+    name: Ali Pourrahim
+    email: nikzadpars@gmail.com
+servers:
+  - url: http://localhost:8001/api/v1
+    description: Ingestion service (local)
+  - url: http://localhost:8002/api/v1
+    description: Query service (local)
+tags:
+  - name: ingest
+    description: Log ingestion endpoints
+  - name: query
+    description: Log query and aggregation endpoints
+  - name: health
+    description: Health checks
+paths:
+  /logs:
+    post:
+      operationId: ingest_log
+      summary: Ingest a log entry
+      description: Validates log payload and publishes to Kafka.
+      tags: [ingest]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LogEntry"
+      responses:
+        "202":
+          description: Log accepted and queued
+        "422":
+          description: Validation error
+        "429":
+          description: Rate limit exceeded
+    get:
+      operationId: query_logs
+      summary: Query logs with filtering and pagination
+      tags: [query]
+      parameters:
+        - name: service_name
+          in: query
+          schema: {type: string}
+        - name: level
+          in: query
+          schema:
+            type: string
+            enum: [DEBUG, INFO, WARNING, ERROR, CRITICAL]
+        - name: from_ts
+          in: query
+          schema: {type: string, format: date-time}
+        - name: to_ts
+          in: query
+          schema: {type: string, format: date-time}
+        - name: q
+          in: query
+          schema: {type: string}
+          description: Full-text search (PostgreSQL GIN index)
+        - name: limit
+          in: query
+          schema: {type: integer, default: 100, minimum: 1, maximum: 1000}
+        - name: cursor
+          in: query
+          schema: {type: string}
+      responses:
+        "200":
+          description: Paginated log entries
+  /logs/aggregations:
+    get:
+      operationId: get_aggregations
+      summary: Error rate aggregations per time bucket
+      tags: [query]
+      parameters:
+        - name: interval
+          in: query
+          schema:
+            type: string
+            enum: ["1m", "5m", "15m", "1h", "6h", "24h"]
+            default: "5m"
+        - name: service_name
+          in: query
+          schema: {type: string}
+      responses:
+        "200":
+          description: Bucketed error counts per service
+  /health:
+    get:
+      operationId: health_check
+      summary: Service liveness check
+      tags: [health]
+      responses:
+        "200":
+          description: Healthy
+components:
+  schemas:
+    LogEntry:
+      type: object
+      required: [service_name, level, message]
+      properties:
+        service_name: {type: string, maxLength: 128}
+        level:
+          type: string
+          enum: [DEBUG, INFO, WARNING, ERROR, CRITICAL]
+        message: {type: string, maxLength: 10000}
+        timestamp: {type: string, format: date-time}
+        metadata:
+          type: object
+          additionalProperties: true
