@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM python:3.11.12-slim-bookworm
 WORKDIR /app
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 RUN pip install --upgrade pip
