@@ -19,7 +19,7 @@ from uuid import UUID
 
 import asyncpg
 import redis.asyncio as aioredis
-from fastapi import FastAPI, HTTPException, Query, status
+from fastapi import APIRouter, FastAPI, HTTPException, Query, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -51,6 +51,8 @@ app = FastAPI(
     description="Query, filter, search, and aggregate logs from PostgreSQL.",
     lifespan=lifespan,
 )
+api_v1 = APIRouter(prefix="/api/v1")
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],
@@ -75,7 +77,7 @@ async def _cached(key: str, fetch_fn) -> Any:
     return result
 
 
-@app.get("/logs", summary="Query logs with filtering and pagination")
+@api_v1.get("/logs", summary="Query logs with filtering and pagination")
 async def query_logs(
     service: str | None = Query(None, description="Filter by service_name"),
     level: str | None = Query(None, description="Filter by log level"),
@@ -139,7 +141,7 @@ async def query_logs(
     return await _cached(cache_key, fetch)
 
 
-@app.get("/logs/aggregations", summary="Error rate aggregations per time interval")
+@api_v1.get("/logs/aggregations", summary="Error rate aggregations per time interval")
 async def aggregations(
     service: str | None = Query(None),
     level: str = Query("ERROR"),
@@ -172,7 +174,7 @@ async def aggregations(
     }
 
 
-@app.get("/health", summary="Health check")
+@api_v1.get("/health", summary="Health check")
 async def health() -> dict[str, Any]:
     db_ok = False
     if _pool:
@@ -184,3 +186,5 @@ async def health() -> dict[str, Any]:
             logger.warning("health probe failed: %s", exc, exc_info=True)
     return {"status": "healthy" if db_ok else "degraded", "service": "query",
             "db": "ok" if db_ok else "error"}
+
+app.include_router(api_v1)
