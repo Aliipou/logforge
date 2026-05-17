@@ -9,6 +9,8 @@ import json
 import logging
 import signal
 import sys
+
+import structlog
 from datetime import UTC, datetime
 
 import asyncpg
@@ -18,7 +20,27 @@ from common.models import KafkaMessage
 from common.settings import DatabaseSettings, KafkaSettings
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
+structlog.configure(
+    processors=[
+        structlog.contextvars.merge_contextvars,
+        structlog.stdlib.add_log_level,
+        structlog.stdlib.add_logger_name,
+        structlog.processors.TimeStamper(fmt="iso"),
+        structlog.stdlib.ProcessorFormatter.wrap_for_formatter,
+    ],
+    logger_factory=structlog.stdlib.LoggerFactory(),
+)
+_formatter = structlog.stdlib.ProcessorFormatter(
+    processors=[
+        structlog.stdlib.ProcessorFormatter.remove_processors_meta,
+        structlog.processors.JSONRenderer(),
+    ],
+)
+_handler = logging.StreamHandler(sys.stdout)
+_handler.setFormatter(_formatter)
+logging.getLogger().handlers.clear()
+logging.getLogger().addHandler(_handler)
+logging.getLogger().setLevel(logging.INFO)
 
 kafka_settings = KafkaSettings()
 db_settings = DatabaseSettings()
