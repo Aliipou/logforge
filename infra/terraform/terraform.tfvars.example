@@ -1,0 +1,8 @@
+# Copy this file to terraform.tfvars and fill in real values.
+# Never commit terraform.tfvars — it is gitignored.
+
+environment             = "dev"
+location                = "northeurope"
+postgres_admin_password = "CHANGE_ME_use_a_vault_secret"
+postgres_sku            = "B_Standard_B1ms"
+container_registry_sku  = "Basic"
