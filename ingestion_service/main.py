@@ -11,7 +11,7 @@ from datetime import UTC, datetime
 from typing import Any, AsyncGenerator
 
 from confluent_kafka import Producer
-from fastapi import FastAPI, HTTPException, Request, status
+from fastapi import APIRouter, FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
@@ -57,6 +57,8 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+api_v1 = APIRouter(prefix="/api/v1")
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],
@@ -72,7 +74,7 @@ def _delivery_report(err, msg) -> None:
         logger.debug("Delivered to %s [%d] @ %d", msg.topic(), msg.partition(), msg.offset())
 
 
-@app.post("/logs", status_code=status.HTTP_202_ACCEPTED,
+@api_v1.post("/logs", status_code=status.HTTP_202_ACCEPTED,
           summary="Ingest a log entry",
           responses={202: {"description": "Accepted and queued to Kafka"},
                      429: {"description": "Rate limit exceeded"}})
@@ -107,6 +109,8 @@ async def ingest_log(entry: LogEntry, request: Request) -> dict[str, str]:
     return {"status": "accepted", "topic": kafka_settings.topic}
 
 
-@app.get("/health", summary="Health check")
+@api_v1.get("/health", summary="Health check")
 async def health() -> dict[str, Any]:
     return {"status": "healthy", "service": "ingestion", "version": "1.0.0"}
+
+app.include_router(api_v1)
