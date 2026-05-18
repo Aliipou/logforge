@@ -32,3 +32,6 @@ ignore_missing_imports = true
 asyncio_mode = "auto"
 testpaths = ["tests"]
 addopts = "--cov=. --cov-report=term-missing --cov-fail-under=70"
+[tool.ruff.lint.isort]
+known-first-party = ["common", "ingestion_service", "query_service", "alerting_service", "processor_service"]
+
