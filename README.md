@@ -1,5 +1,7 @@
 # LogForge
 
+**Live (graph):** [https://ali-logforge.vercel.app](https://ali-logforge.vercel.app)
+
 Every production system generates logs. Without a structured pipeline, debugging means SSH-ing into a server and running `grep` — which does not work when logs are spread across multiple service instances, when you need to answer "how many ERROR events did payment-service emit in the last 10 minutes?", or when you want to be paged before a problem becomes an outage.
 
 Most log collectors write directly to a database on the ingestion path. Under burst load this creates backpressure on the ingest endpoint and can block request threads. LogForge separates the write path (Kafka, fire-and-forget) from the storage path (batch-inserted by a separate consumer), giving the ingestion HTTP endpoint a consistent sub-millisecond response time regardless of database load.
